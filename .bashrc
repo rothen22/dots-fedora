@@ -1,5 +1,7 @@
 # .bashrc
 
+[ -f ~/.bashrc ] && echo -e '\nexport GPG_TTY=$(tty)' >> ~/.bashrc
+
 # Source global definitions
 if [ -f /etc/bashrc ]; then
     . /etc/bashrc
