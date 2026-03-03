@@ -4,6 +4,7 @@ alias ls="lsd -lAh"
 # App shortcuts
 alias h="hx"
 alias cat="bat"
+alias ff="fastfetch"
 
 # Copy, move & remove
 alias cp="cp -iv"
