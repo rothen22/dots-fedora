@@ -1,5 +1,5 @@
 #!/bin/bash
-# install.sh - Install dots-fedora dotfiles with proper symlink handling
+# install.sh - Install dots-fedora dotfiles and required tools
 
 set -e
 
@@ -7,13 +7,14 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOME_DIR="$HOME"
 CONFIG_DIR="$HOME_DIR/.config"
 
-echo "Installing dotfiles from $DOTFILES_DIR..."
+echo "Installing dotfiles and tools from $DOTFILES_DIR..."
 echo ""
 
 # Color codes for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Function to create symlink
@@ -47,7 +48,7 @@ link_file() {
     echo -e "${GREEN}✓ Linked: $target${NC}"
 }
 
-# Function to symlink entire directory contents (not the directory itself)
+# Function to symlink entire directory contents
 link_dir_contents() {
     local source_dir="$1"
     local target_dir="$2"
@@ -82,9 +83,90 @@ link_dir_contents() {
     done
 }
 
+# Function to check if command exists
+command_exists() {
+    command -v "$1" &>/dev/null
+}
+
+# Function to install package
+install_package() {
+    local package="$1"
+    local name="${2:-$package}"
+    
+    if command_exists "$name"; then
+        echo -e "${GREEN}✓ $name already installed${NC}"
+    else
+        echo -e "${YELLOW}Installing $name...${NC}"
+        sudo dnf install -y "$package"
+        echo -e "${GREEN}✓ $name installed${NC}"
+    fi
+}
+
+# ============================================================
+# INSTALL TOOLS & PACKAGES
+# ============================================================
+echo -e "${BLUE}=== Installing Tools & Packages ===${NC}"
+echo ""
+
+# Check if dnf is available
+if ! command_exists dnf; then
+    echo -e "${RED}✗ dnf not found. This script requires Fedora/RHEL.${NC}"
+    exit 1
+fi
+
+# Core utilities
+echo -e "${BLUE}Core Utilities:${NC}"
+install_package "git" "git"
+install_package "curl" "curl"
+install_package "wget" "wget"
+install_package "unzip" "unzip"
+echo ""
+
+# Shell & prompt
+echo -e "${BLUE}Shell & Prompt:${NC}"
+install_package "bash" "bash"
+install_package "starship" "starship"
+install_package "zoxide" "zoxide"
+echo ""
+
+# Terminal
+echo -e "${BLUE}Terminal:${NC}"
+install_package "kitty" "kitty"
+echo ""
+
+# Editors
+echo -e "${BLUE}Editors:${NC}"
+install_package "helix" "hx"
+echo ""
+
+# File utilities
+echo -e "${BLUE}File Utilities:${NC}"
+install_package "lsd" "lsd"
+install_package "bat" "bat"
+echo ""
+
+# Optional: Add more tools here
+echo -e "${BLUE}Optional Development Tools:${NC}"
+echo -e "${YELLOW}Install development tools? (y/n)${NC}"
+read -r install_dev
+
+if [[ "$install_dev" =~ ^[Yy]$ ]]; then
+    install_package "gcc" "gcc"
+    install_package "make" "make"
+    install_package "nodejs" "node"
+    install_package "npm" "npm"
+    install_package "python3" "python3"
+    install_package "git-core" "git"
+fi
+
+echo ""
+
 # ============================================================
 # HOME DIRECTORY DOTFILES
 # ============================================================
+echo -e "${BLUE}=== Installing Dotfiles ===${NC}"
+echo ""
+
 echo "Installing home directory dotfiles..."
 link_file "$DOTFILES_DIR/.bashrc" "$HOME_DIR/.bashrc"
 link_file "$DOTFILES_DIR/.bash_aliases" "$HOME_DIR/.bash_aliases"
@@ -100,17 +182,21 @@ echo ""
 # ============================================================
 # APPLICATION CONFIGS
 # ============================================================
-echo "Installing application configurations..."
+echo -e "${BLUE}=== Installing Application Configs ===${NC}"
+echo ""
+
 mkdir -p "$CONFIG_DIR"
 
 # Helix editor config
 if [ -d "$DOTFILES_DIR/helix" ]; then
+    echo "Installing helix config..."
     link_file "$DOTFILES_DIR/helix" "$CONFIG_DIR/helix"
     echo ""
 fi
 
 # Kitty terminal config
 if [ -d "$DOTFILES_DIR/kitty" ]; then
+    echo "Installing kitty config..."
     link_file "$DOTFILES_DIR/kitty" "$CONFIG_DIR/kitty"
     echo ""
 fi
@@ -118,10 +204,10 @@ fi
 # ============================================================
 # VERIFICATION
 # ============================================================
-echo "Verifying installation..."
+echo -e "${BLUE}=== Verification ===${NC}"
 echo ""
 
-# Check if symlinks exist
+echo "Dotfiles:"
 if [ -L "$HOME_DIR/.bashrc" ] || [ -f "$HOME_DIR/.bashrc" ]; then
     echo -e "${GREEN}✓ .bashrc${NC}"
 else
@@ -141,6 +227,8 @@ else
     echo -e "${RED}✗ .bashrc.d not found${NC}"
 fi
 
+echo ""
+echo "Application Configs:"
 if [ -d "$CONFIG_DIR/helix" ]; then
     echo -e "${GREEN}✓ helix config${NC}"
 else
@@ -154,13 +242,23 @@ else
 fi
 
 echo ""
-echo -e "${GREEN}✓ Dotfiles installed successfully!${NC}"
+echo "Tools:"
+command_exists starship && echo -e "${GREEN}✓ starship${NC}" || echo -e "${YELLOW}✗ starship${NC}"
+command_exists zoxide && echo -e "${GREEN}✓ zoxide${NC}" || echo -e "${YELLOW}✗ zoxide${NC}"
+command_exists kitty && echo -e "${GREEN}✓ kitty${NC}" || echo -e "${YELLOW}✗ kitty${NC}"
+command_exists hx && echo -e "${GREEN}✓ helix${NC}" || echo -e "${YELLOW}✗ helix${NC}"
+command_exists lsd && echo -e "${GREEN}✓ lsd${NC}" || echo -e "${YELLOW}✗ lsd${NC}"
+command_exists bat && echo -e "${GREEN}✓ bat${NC}" || echo -e "${YELLOW}✗ bat${NC}"
+
+echo ""
+echo -e "${GREEN}✓ Installation complete!${NC}"
 echo ""
 echo "Next steps:"
-echo "  1. Review ~/.bashrc to ensure it looks correct"
-echo "  2. Run: source ~/.bashrc"
-echo "  3. Test: echo \$PATH, which starship, which zoxide"
+echo "  1. Restart your terminal or run: source ~/.bashrc"
+echo "  2. Configure kitty: hx ~/.config/kitty/kitty.conf"
+echo "  3. Configure helix: hx ~/.config/helix/config.toml"
 echo ""
-echo "To uninstall, run:"
-echo "  rm ~/.bashrc ~/.bash_aliases ~/.bashrc.d"
-echo "  rm -rf ~/.config/helix ~/.config/kitty"
+echo "Useful commands:"
+echo "  dotcommit 'message' - Commit dotfiles"
+echo "  dotpush             - Push dotfiles"
+echo ""
