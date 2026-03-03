@@ -1,0 +1,6 @@
+# Backup files from install.sh
+*.bak
+.DS_Store
+*~
+*.swp
+*.swo

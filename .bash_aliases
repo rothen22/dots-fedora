@@ -13,3 +13,7 @@ alias rm="rm -iv"
 # Git commit & push scripts
 alias dotcommit="bash ~/dotfiles/commit.sh"
 alias dotpush="bash ~/dotfiles/push.sh"
+
+# Directory shortcuts
+alias dots="cd ~/dotfiles"
+alias src="cd ~/src"

@@ -1,5 +1,4 @@
 # https://docs.helix-editor.com/configuration.html
-
 theme = "tokyonight"
 
 [editor]
