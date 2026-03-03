@@ -1,6 +1,4 @@
-# .bashrc
-
-[ -f ~/.bashrc ] && echo -e '\nexport GPG_TTY=$(tty)' >> ~/.bashrc
+# .bashrc - Simplified
 
 # Source global definitions
 if [ -f /etc/bashrc ]; then
@@ -12,17 +10,13 @@ if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
 
-
 # User specific environment
 if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:" ]]; then
     PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 fi
 export PATH
 
-# Uncomment the following line if you don't like systemctl's auto-paging feature:
-# export SYSTEMD_PAGER=
-
-# User specific aliases and functions
+# Source modular configs
 if [ -d ~/.bashrc.d ]; then
     for rc in ~/.bashrc.d/*; do
         if [ -f "$rc" ]; then
@@ -31,9 +25,3 @@ if [ -d ~/.bashrc.d ]; then
     done
 fi
 unset rc
-
-# Starship prompt
-eval "$(starship init bash)"
-
-# Zoxide
-eval "$(zoxide init bash --cmd cd)"
