@@ -1,0 +1,2 @@
+# Enable completion in SSH Manager (SSHM)
+source <(sshm completion bash)
